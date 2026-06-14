@@ -1,36 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🎮 Три в ряд — Base Mini App
 
-## Getting Started
+Класична гра «**три в ряд**» (match-3), зроблена як **Base Mini App** на Next.js + TypeScript + Tailwind CSS.
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Base](https://img.shields.io/badge/Base-Mini%20App-0052ff)
+
+## ✨ Можливості
+
+- 🟦 Дошка 8×8 з 6 типами фішок
+- 🔀 Обмін сусідніх фішок тапом
+- ⛓️ Каскадні збіги з комбо-множником
+- 📉 Гравітація — фішки падають, зверху з'являються нові
+- 🏆 Збереження рекорду в `localStorage`
+- 📱 Адаптивний дизайн під мобільні
+- 🔵 Інтеграція з Base / Farcaster Mini App SDK
+
+## 🚀 Запуск локально
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Відкрий [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🏗️ Збірка
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## 📁 Структура
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  page.tsx              # головна сторінка
+  layout.tsx            # метадані + Base Mini App embed
+  components/
+    Match3.tsx          # UI гри (дошка, рахунок, анімації)
+    MiniAppReady.tsx    # виклик sdk.actions.ready()
+lib/
+  game.ts               # логіка match-3 (движок)
+public/
+  .well-known/
+    farcaster.json      # маніфест Base Mini App
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🔵 Деплой як Base Mini App
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Задеплой проєкт (наприклад, на [Vercel](https://vercel.com)).
+2. У `app/layout.tsx` і `public/.well-known/farcaster.json` заміни
+   `YOUR-DOMAIN.vercel.app` на свій реальний домен
+   (або задай змінну середовища `NEXT_PUBLIC_URL`).
+3. Додай зображення `og.png`, `icon.png`, `splash.png` у папку `public/`.
+4. Зареєструй міні-апп у [Base Build](https://base.org/build) /
+   через [Manifest Tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
+   та підпиши `accountAssociation`.
 
-## Deploy on Vercel
+## 🎯 Як грати
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Тапни на фішку, потім на сусідню, щоб поміняти їх місцями.
+Збери **3 або більше** однакових фішок у ряд чи стовпець — вони зникнуть,
+а ти отримаєш очки. У тебе **30 ходів**.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+
+Зроблено з ❤️ на Next.js.
