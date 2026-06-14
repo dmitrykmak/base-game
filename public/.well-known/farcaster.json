@@ -2,9 +2,9 @@
   "frame": {
     "version": "1",
     "name": "Три в ряд",
-    "iconUrl": "https://YOUR-DOMAIN.vercel.app/icon.png",
-    "homeUrl": "https://YOUR-DOMAIN.vercel.app",
-    "splashImageUrl": "https://YOUR-DOMAIN.vercel.app/splash.png",
+    "iconUrl": "https://base-game-three.vercel.app/icon.png",
+    "homeUrl": "https://base-game-three.vercel.app",
+    "splashImageUrl": "https://base-game-three.vercel.app/splash.png",
     "splashBackgroundColor": "#0a0e1a",
     "subtitle": "Match-3 гра",
     "description": "Класична гра «три в ряд» як Base Mini App. Збирай фішки, набирай очки, побий рекорд!",

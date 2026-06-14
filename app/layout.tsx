@@ -12,9 +12,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-// 🔁 Заміни на свій домен після деплою на Vercel
+// Домен продакшн-деплою на Vercel
 const APP_URL =
-  process.env.NEXT_PUBLIC_URL || "https://YOUR-DOMAIN.vercel.app";
+  process.env.NEXT_PUBLIC_URL || "https://base-game-three.vercel.app";
 
 // Base Mini App embed (показує кнопку "Грати" при шерингу посилання)
 const miniapp = {
