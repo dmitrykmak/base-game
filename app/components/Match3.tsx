@@ -16,8 +16,17 @@ import {
   hasValidMove,
   scoreForClear,
 } from "@/lib/game";
+import { sendMoveTx, connectWallet, isInMiniApp } from "@/lib/baseTx";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+type TxStatus =
+  | { state: "idle" }
+  | { state: "pending" }
+  | { state: "success"; hash: string }
+  | { state: "rejected" }
+  | { state: "error" }
+  | { state: "no-wallet" };
 
 export default function Match3() {
   const [board, setBoard] = useState<Board>([]);
@@ -28,6 +37,23 @@ export default function Match3() {
   const [clearing, setClearing] = useState<Set<string>>(new Set());
   const [busy, setBusy] = useState(false);
   const [gameOver, setGameOver] = useState(false);
+  const [txStatus, setTxStatus] = useState<TxStatus>({ state: "idle" });
+  const [inMiniApp, setInMiniApp] = useState(false);
+  const [wallet, setWallet] = useState<string | null>(null);
+  // Чи вимагати транзакцію на кожен хід (можна вимкнути перемикачем)
+  const [txPerMove, setTxPerMove] = useState(true);
+
+  // Визначаємо середовище Base + пробуємо під'єднати гаманець
+  useEffect(() => {
+    (async () => {
+      const inside = await isInMiniApp();
+      setInMiniApp(inside);
+      if (inside) {
+        const addr = await connectWallet();
+        setWallet(addr);
+      }
+    })();
+  }, []);
 
   // Ініціалізація + завантаження рекорду
   useEffect(() => {
@@ -111,6 +137,23 @@ export default function Match3() {
 
       setBoard(swapped);
       setSelected(null);
+
+      // 🔵 Base: на кожен валідний хід — транзакція в мережі Base.
+      // Йде паралельно з анімацією; гра НЕ падає, якщо відхилити.
+      if (txPerMove && inMiniApp) {
+        setTxStatus({ state: "pending" });
+        sendMoveTx({
+          from: [selected.row, selected.col],
+          to: [pos.row, pos.col],
+          score,
+        }).then((res) => {
+          if (res.ok) setTxStatus({ state: "success", hash: res.hash });
+          else setTxStatus({ state: res.reason });
+          // авто-сховати банер успіху/помилки за 3.5с
+          setTimeout(() => setTxStatus({ state: "idle" }), 3500);
+        });
+      }
+
       await sleep(160);
 
       const { board: settled } = await resolveBoard(swapped);
@@ -123,7 +166,7 @@ export default function Match3() {
       }
       setBusy(false);
     },
-    [busy, gameOver, selected, board, moves, resolveBoard]
+    [busy, gameOver, selected, board, moves, resolveBoard, txPerMove, inMiniApp, score]
   );
 
   const restart = () => {
@@ -148,6 +191,37 @@ export default function Match3() {
         <Stat label="Ходи" value={moves} accent={moves <= 5 ? "#ef4444" : "#22c55e"} />
         <Stat label="Рекорд" value={best} accent="#a855f7" />
       </div>
+
+      {/* Статус Base / транзакції */}
+      <div className="flex items-center justify-between w-full gap-2 text-xs">
+        <div className="flex items-center gap-1.5">
+          <span
+            className="inline-block h-2 w-2 rounded-full"
+            style={{ background: inMiniApp ? "#22c55e" : "#71717a" }}
+          />
+          <span className="text-zinc-400">
+            {inMiniApp
+              ? wallet
+                ? `Base: ${wallet.slice(0, 6)}…${wallet.slice(-4)}`
+                : "Base: підключення…"
+              : "Поза Base (демо-режим)"}
+          </span>
+        </div>
+        {inMiniApp && (
+          <label className="flex items-center gap-1.5 cursor-pointer select-none text-zinc-400">
+            <input
+              type="checkbox"
+              checked={txPerMove}
+              onChange={(e) => setTxPerMove(e.target.checked)}
+              className="accent-[#0052ff]"
+            />
+            Tx на кожен хід
+          </label>
+        )}
+      </div>
+
+      {/* Банер статусу транзакції */}
+      <TxBanner status={txStatus} />
 
       {/* Дошка */}
       <div
@@ -225,3 +299,37 @@ function Stat({ label, value, accent }: { label: string; value: number; accent: 
     </div>
   );
 }
+
+function TxBanner({ status }: { status: TxStatus }) {
+  if (status.state === "idle") return null;
+
+  const map: Record<string, { text: string; color: string; bg: string }> = {
+    pending: { text: "⏳ Підтвердь транзакцію в гаманці…", color: "#fbbf24", bg: "#fbbf2422" },
+    success: { text: "✅ Хід записано в Base", color: "#22c55e", bg: "#22c55e22" },
+    rejected: { text: "✋ Транзакцію відхилено (хід зараховано)", color: "#f87171", bg: "#f8717122" },
+    error: { text: "⚠️ Помилка транзакції (хід зараховано)", color: "#f87171", bg: "#f8717122" },
+    "no-wallet": { text: "👛 Гаманець недоступний", color: "#a1a1aa", bg: "#a1a1aa22" },
+  };
+  const s = map[status.state];
+  if (!s) return null;
+
+  return (
+    <div
+      className="w-full rounded-xl px-3 py-2 text-xs text-center ring-1 ring-white/10 transition-all"
+      style={{ background: s.bg, color: s.color }}
+    >
+      {s.text}
+      {status.state === "success" && (
+        <a
+          href={`https://basescan.org/tx/${status.hash}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-1.5 underline opacity-80 hover:opacity-100"
+        >
+          переглянути ↗
+        </a>
+      )}
+    </div>
+  );
+}
+
