@@ -1,4 +1,4 @@
-import Match3 from "./components/Match3";
+import BusJam from "./components/BusJam";
 import MiniAppReady from "./components/MiniAppReady";
 
 export default function Home() {
@@ -13,11 +13,14 @@ export default function Home() {
           <span className="text-sm font-medium text-zinc-400">Base Mini App</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight bg-gradient-to-r from-[#0052ff] via-[#3b82f6] to-[#a855f7] bg-clip-text text-transparent">
-          Три в ряд
+          🚌 Bus Traffic Fever
         </h1>
+        <p className="text-xs text-zinc-500">
+          Виведи автобус із затору — кожен хід у мережі Base
+        </p>
       </header>
 
-      <Match3 />
+      <BusJam />
 
       <footer className="text-xs text-zinc-600">
         Зроблено на Next.js · Base Mini App

@@ -1,14 +1,14 @@
 {
   "frame": {
     "version": "1",
-    "name": "Три в ряд",
+    "name": "Bus Traffic Fever",
     "iconUrl": "https://base-game-three.vercel.app/icon.png",
     "homeUrl": "https://base-game-three.vercel.app",
     "splashImageUrl": "https://base-game-three.vercel.app/splash.png",
     "splashBackgroundColor": "#0a0e1a",
-    "subtitle": "Match-3 гра",
-    "description": "Класична гра «три в ряд» як Base Mini App. Збирай фішки, набирай очки, побий рекорд!",
+    "subtitle": "Головоломка з автобусами",
+    "description": "Виведи синій автобус із затору, рухаючи інший транспорт. Кожен хід записується транзакцією в мережі Base. Три рівні складності.",
     "primaryCategory": "games",
-    "tags": ["game", "puzzle", "match3", "casual"]
+    "tags": ["game", "puzzle", "traffic", "bus", "casual"]
   }
 }

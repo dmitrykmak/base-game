@@ -21,10 +21,10 @@ const miniapp = {
   version: "1",
   imageUrl: `${APP_URL}/og.png`,
   button: {
-    title: "🎮 Грати",
+    title: "🚌 Грати",
     action: {
       type: "launch_miniapp",
-      name: "Три в ряд",
+      name: "Bus Traffic Fever",
       url: APP_URL,
       splashImageUrl: `${APP_URL}/splash.png`,
       splashBackgroundColor: "#0a0e1a",
@@ -33,8 +33,9 @@ const miniapp = {
 };
 
 export const metadata: Metadata = {
-  title: "Три в ряд — Base Mini App",
-  description: "Гра «три в ряд» (match-3) як Base Mini App на Next.js",
+  title: "Bus Traffic Fever — Base Mini App",
+  description:
+    "Головоломка з автобусами: виведи автобус із затору. Кожен хід — транзакція в мережі Base.",
   other: {
     // Base.dev — підтвердження власності домену (App ID)
     "base:app_id": "6a2ea5a1894040438b8e6431",

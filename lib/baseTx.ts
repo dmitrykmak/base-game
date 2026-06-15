@@ -69,8 +69,8 @@ export async function connectWallet(): Promise<string | null> {
   }
 }
 
-// Закодувати хід у hex для поля data транзакції
-function encodeMove(move: { from: [number, number]; to: [number, number]; score: number }): string {
+// Закодувати хід автобуса у hex для поля data транзакції
+function encodeMove(move: BusMove): string {
   const json = JSON.stringify(move);
   let hex = "0x";
   for (let i = 0; i < json.length; i++) {
@@ -79,16 +79,19 @@ function encodeMove(move: { from: [number, number]; to: [number, number]; score:
   return hex;
 }
 
+export type BusMove = {
+  level: number; // номер рівня (0-based)
+  id: string; // який транспорт зрушили
+  delta: number; // на скільки клітинок (+вперед / -назад)
+  moves: number; // лічильник ходів на момент дії
+};
+
 export type TxResult =
   | { ok: true; hash: string }
   | { ok: false; reason: "no-wallet" | "rejected" | "error" };
 
-// Надіслати транзакцію за один хід. Не кидає виняток — гра не має падати.
-export async function sendMoveTx(move: {
-  from: [number, number];
-  to: [number, number];
-  score: number;
-}): Promise<TxResult> {
+// Надіслати транзакцію за один хід автобуса. Не кидає виняток — гра не має падати.
+export async function sendMoveTx(move: BusMove): Promise<TxResult> {
   const provider = await getProvider();
   if (!provider) return { ok: false, reason: "no-wallet" };
 
