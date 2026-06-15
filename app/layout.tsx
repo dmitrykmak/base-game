@@ -36,6 +36,8 @@ export const metadata: Metadata = {
   title: "Три в ряд — Base Mini App",
   description: "Гра «три в ряд» (match-3) як Base Mini App на Next.js",
   other: {
+    // Base.dev — підтвердження власності домену (App ID)
+    "base:app_id": "6a2ea5a1894040438b8e6431",
     "fc:miniapp": JSON.stringify(miniapp),
     // зворотна сумісність зі старою назвою тега
     "fc:frame": JSON.stringify(miniapp),
