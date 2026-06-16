@@ -1,19 +1,24 @@
 const sharp = require("sharp");
 
-const COLORS = ["#38bdf8", "#3b82f6", "#22c55e", "#eab308", "#ef4444", "#a855f7"];
-
-// намалювати ряд кольорових фішок (кружечків) по центру
-function gems(cx, cy, r, gap, colors) {
-  const total = colors.length;
-  const startX = cx - ((total - 1) * gap) / 2;
-  return colors
-    .map((c, i) => {
-      const x = startX + i * gap;
-      return `<circle cx="${x}" cy="${cy}" r="${r}" fill="${c}">
-        <animate/></circle>
-        <circle cx="${x}" cy="${cy}" r="${r}" fill="${c}" stroke="#ffffff22" stroke-width="2"/>`;
-    })
+// Синє коло-ціль із концентричними кільцями + блискавка (векторна, без emoji).
+// cx,cy — центр; R — зовнішній радіус.
+function target(cx, cy, R) {
+  const rings = [
+    { r: R, fill: "#001a66" },
+    { r: R * 0.78, fill: "#0052ff" },
+    { r: R * 0.5, fill: "#3b82f6" },
+    { r: R * 0.26, fill: "#93c5fd" },
+  ];
+  const circles = rings
+    .map(
+      (g) =>
+        `<circle cx="${cx}" cy="${cy}" r="${g.r}" fill="${g.fill}" stroke="#ffffff22" stroke-width="${R * 0.02}"/>`,
+    )
     .join("");
+  // блискавка по центру
+  const s = R * 0.4;
+  const bolt = `<path d="M ${cx + s * 0.15} ${cy - s} L ${cx - s * 0.45} ${cy + s * 0.1} L ${cx} ${cy + s * 0.1} L ${cx - s * 0.15} ${cy + s} L ${cx + s * 0.55} ${cy - s * 0.15} L ${cx + s * 0.05} ${cy - s * 0.15} Z" fill="#ffffff"/>`;
+  return circles + bolt;
 }
 
 const icon = `
@@ -24,19 +29,18 @@ const icon = `
     </linearGradient>
   </defs>
   <rect width="1024" height="1024" rx="180" fill="url(#bg)"/>
-  ${gems(512, 300, 70, 165, COLORS.slice(0, 3))}
-  ${gems(512, 460, 70, 165, COLORS.slice(3, 6))}
-  <text x="512" y="700" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
-        font-size="130" font-weight="900" fill="#3b82f6">Три</text>
-  <text x="512" y="830" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
-        font-size="130" font-weight="900" fill="#a855f7">в ряд</text>
+  ${target(512, 410, 250)}
+  <text x="512" y="800" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
+        font-size="150" font-weight="900" fill="#3b82f6">TAP</text>
+  <text x="512" y="910" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
+        font-size="90" font-weight="900" fill="#a855f7">RUSH</text>
 </svg>`;
 
 const splash = `
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="400">
   <rect width="400" height="400" fill="#0a0e1a"/>
-  ${gems(200, 150, 40, 92, COLORS.slice(0, 3))}
-  <text x="200" y="300" text-anchor="middle" font-family="Arial" font-size="48" font-weight="900" fill="#3b82f6">Три в ряд</text>
+  ${target(200, 160, 110)}
+  <text x="200" y="330" text-anchor="middle" font-family="Arial" font-size="46" font-weight="900" fill="#3b82f6">Base Tap Rush</text>
 </svg>`;
 
 const og = `
@@ -47,17 +51,22 @@ const og = `
     </linearGradient>
   </defs>
   <rect width="1200" height="630" fill="url(#bg)"/>
-  ${gems(600, 200, 55, 140, COLORS)}
-  <text x="600" y="430" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
-        font-size="110" font-weight="900" fill="#3b82f6">Три в ряд</text>
-  <text x="600" y="510" text-anchor="middle" font-family="Arial,Helvetica,sans-serif"
-        font-size="42" fill="#a1a1aa">Match-3 гра · Base Mini App</text>
+  ${target(300, 315, 200)}
+  <text x="600" y="270" text-anchor="start" font-family="Arial,Helvetica,sans-serif"
+        font-size="88" font-weight="900" fill="#3b82f6">Base Tap Rush</text>
+  <text x="600" y="345" text-anchor="start" font-family="Arial,Helvetica,sans-serif"
+        font-size="40" fill="#e4e4e7">Тапай · комбо · множник x5</text>
+  <text x="600" y="425" text-anchor="start" font-family="Arial,Helvetica,sans-serif"
+        font-size="34" fill="#a1a1aa">Кожен тап — транзакція в Base</text>
 </svg>`;
 
 async function run() {
   await sharp(Buffer.from(icon)).png().toFile("public/icon.png");
   await sharp(Buffer.from(splash)).png().toFile("public/splash.png");
   await sharp(Buffer.from(og)).png().toFile("public/og.png");
-  console.log("✓ icon.png, splash.png, og.png створено (кольорові фігури)");
+  console.log("✓ icon.png, splash.png, og.png створено (Base Tap Rush)");
 }
-run().catch((e) => { console.error(e); process.exit(1); });
+run().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

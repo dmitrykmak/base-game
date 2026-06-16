@@ -1,10 +1,18 @@
 // Робота з гаманцем Base через Mini App SDK.
-// На кожен хід надсилаємо транзакцію в мережі Base.
-// Транзакція: 0 ETH самому собі, у calldata — закодований хід (для прозорості on-chain).
+// Монетизація: кожен тап у грі надсилає КРИХІТНУ плату (fee) на гаманець-отримувач.
+// Тобто гравець платить мікросуму власнику гри за кожну дію. Більше тапів → більше доходу.
 
 // Base Mainnet
 export const BASE_CHAIN_ID = 8453;
 export const BASE_CHAIN_HEX = "0x2105";
+
+// Гаманець, який отримує мікроплати (твій гаманець на Base).
+export const RECIPIENT = "0x378D54645EDf8A71bf7278A0F1059AC2251974Ce";
+
+// Розмір плати за один тап у wei (нативний ETH на Base).
+// 0.000002 ETH ≈ $0.005 при ціні ~$2500/ETH. Можна змінити.
+// 0.000002 ETH = 2_000_000_000_000 wei = 0x1d1a94a2000
+export const FEE_WEI_HEX = "0x1d1a94a2000";
 
 let cachedAddress: string | null = null;
 
@@ -69,9 +77,9 @@ export async function connectWallet(): Promise<string | null> {
   }
 }
 
-// Закодувати хід автобуса у hex для поля data транзакції
-function encodeMove(move: BusMove): string {
-  const json = JSON.stringify(move);
+// Закодувати дані тапу у hex для поля data транзакції (прозорість on-chain)
+function encodeTap(tap: TapAction): string {
+  const json = JSON.stringify(tap);
   let hex = "0x";
   for (let i = 0; i < json.length; i++) {
     hex += json.charCodeAt(i).toString(16).padStart(2, "0");
@@ -79,19 +87,18 @@ function encodeMove(move: BusMove): string {
   return hex;
 }
 
-export type BusMove = {
-  level: number; // номер рівня (0-based)
-  id: string; // який транспорт зрушили
-  delta: number; // на скільки клітинок (+вперед / -назад)
-  moves: number; // лічильник ходів на момент дії
+export type TapAction = {
+  score: number; // рахунок на момент тапу
+  combo: number; // поточне комбо
+  ts: number; // час дії (мс)
 };
 
 export type TxResult =
   | { ok: true; hash: string }
   | { ok: false; reason: "no-wallet" | "rejected" | "error" };
 
-// Надіслати транзакцію за один хід автобуса. Не кидає виняток — гра не має падати.
-export async function sendMoveTx(move: BusMove): Promise<TxResult> {
+// Надіслати транзакцію-мікроплату за один тап. Не кидає виняток — гра не має падати.
+export async function sendTapTx(tap: TapAction): Promise<TxResult> {
   const provider = await getProvider();
   if (!provider) return { ok: false, reason: "no-wallet" };
 
@@ -106,9 +113,9 @@ export async function sendMoveTx(move: BusMove): Promise<TxResult> {
       params: [
         {
           from: address,
-          to: address, // 0 ETH самому собі
-          value: "0x0",
-          data: encodeMove(move),
+          to: RECIPIENT, // мікроплата йде власнику гри
+          value: FEE_WEI_HEX,
+          data: encodeTap(tap),
         },
       ],
     })) as string;

@@ -1,14 +1,14 @@
 {
   "frame": {
     "version": "1",
-    "name": "Bus Traffic Fever",
+    "name": "Base Tap Rush",
     "iconUrl": "https://base-game-three.vercel.app/icon.png",
     "homeUrl": "https://base-game-three.vercel.app",
     "splashImageUrl": "https://base-game-three.vercel.app/splash.png",
     "splashBackgroundColor": "#0a0e1a",
-    "subtitle": "Головоломка з автобусами",
-    "description": "Виведи синій автобус із затору, рухаючи інший транспорт. Кожен хід записується транзакцією в мережі Base. Три рівні складності.",
+    "subtitle": "Тапай і нарощуй комбо",
+    "description": "Швидкий тапер на Base: тапай по цілі, нарощуй комбо й множник очок до 5×. Кожен тап записується мікротранзакцією в мережі Base.",
     "primaryCategory": "games",
-    "tags": ["game", "puzzle", "traffic", "bus", "casual"]
+    "tags": ["game", "tap", "arcade", "casual", "combo"]
   }
 }

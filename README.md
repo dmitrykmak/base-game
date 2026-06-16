@@ -1,18 +1,29 @@
-# 🎮 Три в ряд — Base Mini App
+# ⚡ Base Tap Rush — Base Mini App
 
-Класична гра «**три в ряд**» (match-3), зроблена як **Base Mini App** на Next.js + TypeScript + Tailwind CSS.
+Швидкий аркадний **тапер** як **Base Mini App** на Next.js + TypeScript + Tailwind CSS.
+Тапай по цілі, нарощуй комбо й множник очок — **кожен тап надсилає мікротранзакцію в мережі Base**.
 
 ![Next.js](https://img.shields.io/badge/Next.js-16-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue) ![Base](https://img.shields.io/badge/Base-Mini%20App-0052ff)
 
 ## ✨ Можливості
 
-- 🟦 Дошка 8×8 з 6 типами фішок
-- 🔀 Обмін сусідніх фішок тапом
-- ⛓️ Каскадні збіги з комбо-множником
-- 📉 Гравітація — фішки падають, зверху з'являються нові
-- 🏆 Збереження рекорду в `localStorage`
-- 📱 Адаптивний дизайн під мобільні
-- 🔵 Інтеграція з Base / Farcaster Mini App SDK
+- ⚡ Велика кнопка-ціль: один тап = +очки
+- 🔥 Комбо: швидкі тапи поспіль нарощують серію (вікно 1.5 с)
+- ✖️ Множник очок до **5×** (кожні 5 тапів поспіль +1)
+- 💸 **Монетизація:** кожен тап шле мікроплату на гаманець власника гри
+- 🏆 Збереження рекорду очок у `localStorage`
+- 📱 Адаптивний дизайн під мобільні + спливаючі "+очки"
+- 🔵 Інтеграція з Base / Farcaster Mini App SDK (з демо-режимом у браузері)
+
+## 💸 Як працює заробіток
+
+Кожен тап викликає `eth_sendTransaction`, що переказує крихітну суму
+(`FEE_WEI_HEX` у `lib/baseTx.ts`, за замовчуванням ≈ $0.005) на гаманець-отримувач
+`RECIPIENT`. Більше тапів від гравців → більше мікроплат. Газ за транзакцію
+платить гравець, плата йде власнику гри.
+
+> ⚠️ Газ мережі Base — це НЕ дохід. Дохід — лише поле `value` транзакції,
+> яке йде на `RECIPIENT`. Налаштуй розмір плати в `lib/baseTx.ts`.
 
 ## 🚀 Запуск локально
 
@@ -21,7 +32,9 @@ npm install
 npm run dev
 ```
 
-Відкрий [http://localhost:3000](http://localhost:3000).
+Відкрий [http://localhost:3000](http://localhost:3000). У звичайному браузері
+гра працює в **демо-режимі** (без транзакцій); on-chain логіка вмикається
+лише всередині Base App / Farcaster.
 
 ## 🏗️ Збірка
 
@@ -34,34 +47,44 @@ npm start
 
 ```
 app/
-  page.tsx              # головна сторінка
-  layout.tsx            # метадані + Base Mini App embed
+  page.tsx                # головна сторінка
+  layout.tsx              # метадані + Base Mini App embed + base:app_id
   components/
-    Match3.tsx          # UI гри (дошка, рахунок, анімації)
-    MiniAppReady.tsx    # виклик sdk.actions.ready()
+    TapRush.tsx           # головний компонент гри (стан, тапи, транзакції)
+    TapParts.tsx          # презентаційні частини (рахунок, кнопка, банери)
+    MiniAppReady.tsx      # виклик sdk.actions.ready()
 lib/
-  game.ts               # логіка match-3 (движок)
+  tapGame.ts              # логіка тапів/комбо/множника (чистий движок)
+  baseTx.ts               # гаманець + мікроплата-транзакція на кожен тап
+scripts/
+  gen-images.js           # генерація icon/splash/og (векторні фігури)
 public/
   .well-known/
-    farcaster.json      # маніфест Base Mini App
+    farcaster.json        # маніфест Base Mini App
 ```
+
+## 🔧 Налаштування плати
+
+У `lib/baseTx.ts`:
+- `RECIPIENT` — гаманець, який отримує мікроплати.
+- `FEE_WEI_HEX` — розмір плати за тап у wei (hex). За замовчуванням
+  `0x1d1a94a2000` = 0.000002 ETH ≈ $0.005.
 
 ## 🔵 Деплой як Base Mini App
 
-1. Задеплой проєкт (наприклад, на [Vercel](https://vercel.com)).
-2. У `app/layout.tsx` і `public/.well-known/farcaster.json` заміни
-   `YOUR-DOMAIN.vercel.app` на свій реальний домен
-   (або задай змінну середовища `NEXT_PUBLIC_URL`).
-3. Додай зображення `og.png`, `icon.png`, `splash.png` у папку `public/`.
-4. Зареєструй міні-апп у [Base Build](https://base.org/build) /
-   через [Manifest Tool](https://farcaster.xyz/~/developers/mini-apps/manifest)
-   та підпиши `accountAssociation`.
+1. Задеплой проєкт на [Vercel](https://vercel.com) (репозиторій уже підключений —
+   `git push` у `main` автоматично деплоїть на прод).
+2. Перевір, що домен у `app/layout.tsx` і `public/.well-known/farcaster.json`
+   відповідає реальному (або задай `NEXT_PUBLIC_URL`).
+3. Згенеруй зображення: `node scripts/gen-images.js`.
+4. Зареєструй / верифікуй домен на [Base.dev](https://www.base.dev) — мета-тег
+   `base:app_id` уже вшито в `layout.tsx`.
 
 ## 🎯 Як грати
 
-Тапни на фішку, потім на сусідню, щоб поміняти їх місцями.
-Збери **3 або більше** однакових фішок у ряд чи стовпець — вони зникнуть,
-а ти отримаєш очки. У тебе **30 ходів**.
+Тапай по синьому колу. Тапай **швидко поспіль** — комбо і множник ростуть
+(до 5×), очки нараховуються швидше. Якщо зробити паузу довше 1.5 с — комбо
+скидається. Кожен тап записується транзакцією в мережі Base.
 
 ---
 
