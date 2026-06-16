@@ -1,6 +1,8 @@
 "use client";
 
 import type { TxStatus } from "./TapRush";
+import type { Achievement } from "@/lib/achievements";
+import type { ScoreEntry } from "@/lib/leaderboard";
 
 const MAIN = "#0052ff";
 
@@ -220,5 +222,117 @@ export function TapTarget({
         ))}
       </button>
     </div>
+  );
+}
+
+// Тост розблокованого досягнення (зверху екрана)
+export function AchievementToast({
+  achievement,
+}: {
+  achievement: Achievement | null;
+}) {
+  if (!achievement) return null;
+  return (
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-[floatUp_0.4s_ease-out] ">
+      <div className="flex items-center gap-3 rounded-xl bg-gradient-to-r from-[#0052ff] to-[#a855f7] px-4 py-3 shadow-2xl ring-1 ring-white/20">
+        <span className="text-2xl">{achievement.icon}</span>
+        <div className="text-left">
+          <div className="text-[10px] uppercase tracking-wider text-white/70">
+            Досягнення розблоковано
+          </div>
+          <div className="text-sm font-black text-white">
+            {achievement.title}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Сітка досягнень (розблоковані / заблоковані)
+export function AchievementsPanel({
+  all,
+  unlocked,
+}: {
+  all: Achievement[];
+  unlocked: Set<string>;
+}) {
+  const done = all.filter((a) => unlocked.has(a.id)).length;
+  return (
+    <details className="w-full rounded-xl bg-white/5 ring-1 ring-white/10">
+      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-zinc-200 flex items-center justify-between">
+        <span>🏅 Досягнення</span>
+        <span className="text-xs text-zinc-400">
+          {done}/{all.length}
+        </span>
+      </summary>
+      <div className="grid grid-cols-3 gap-2 px-3 pb-3">
+        {all.map((a) => {
+          const got = unlocked.has(a.id);
+          return (
+            <div
+              key={a.id}
+              title={a.desc}
+              className={`flex flex-col items-center gap-1 rounded-lg px-2 py-2 text-center ring-1 transition-colors ${
+                got
+                  ? "bg-[#0052ff]/15 ring-[#0052ff]/40"
+                  : "bg-white/5 ring-white/10 opacity-50"
+              }`}
+            >
+              <span className="text-xl">{got ? a.icon : "🔒"}</span>
+              <span className="text-[10px] leading-tight text-zinc-300">
+                {a.title}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </details>
+  );
+}
+
+// Лідерборд топ-результатів (локальний)
+export function Leaderboard({
+  entries,
+  currentScore,
+}: {
+  entries: ScoreEntry[];
+  currentScore: number;
+}) {
+  if (entries.length === 0) return null;
+  return (
+    <details className="w-full rounded-xl bg-white/5 ring-1 ring-white/10">
+      <summary className="cursor-pointer select-none px-4 py-2.5 text-sm font-semibold text-zinc-200 flex items-center justify-between">
+        <span>🏆 Топ результатів</span>
+        <span className="text-xs text-zinc-400">{entries.length}</span>
+      </summary>
+      <ol className="px-3 pb-3 flex flex-col gap-1">
+        {entries.map((e, i) => {
+          const isCurrent = e.score === currentScore && currentScore > 0;
+          return (
+            <li
+              key={`${e.ts}-${i}`}
+              className={`flex items-center justify-between rounded-lg px-3 py-1.5 text-sm ${
+                isCurrent
+                  ? "bg-[#0052ff]/20 ring-1 ring-[#0052ff]/40"
+                  : "bg-white/5"
+              }`}
+            >
+              <span className="flex items-center gap-2">
+                <span className="w-5 text-zinc-500 tabular-nums">
+                  {i === 0 ? "🥇" : i === 1 ? "🥈" : i === 2 ? "🥉" : i + 1}
+                </span>
+                <span className="font-black tabular-nums text-zinc-100">
+                  {e.score.toLocaleString("uk")}
+                </span>
+              </span>
+              <span className="text-[11px] text-zinc-500">
+                {e.taps} тапів · комбо x{e.bestCombo}
+              </span>
+            </li>
+          );
+        })}
+      </ol>
+    </details>
   );
 }

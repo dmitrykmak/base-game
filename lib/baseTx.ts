@@ -137,3 +137,49 @@ export async function isInMiniApp(): Promise<boolean> {
     return false;
   }
 }
+
+// Плата за розблокування досягнення (особлива подія — трохи більша).
+// 0.000005 ETH ≈ $0.0125. = 5_000_000_000_000 wei = 0x48c27395000
+export const ACHIEVEMENT_FEE_WEI_HEX = "0x48c27395000";
+
+export type AchievementTx = {
+  id: string; // ідентифікатор досягнення
+  title: string; // назва
+  score: number; // рахунок на момент розблокування
+};
+
+// Надіслати транзакцію за розблоковане досягнення (окрема мікроплата).
+export async function sendAchievementTx(
+  ach: AchievementTx,
+): Promise<TxResult> {
+  const provider = await getProvider();
+  if (!provider) return { ok: false, reason: "no-wallet" };
+
+  const address = await connectWallet();
+  if (!address) return { ok: false, reason: "no-wallet" };
+
+  await ensureBase(provider);
+
+  try {
+    const hash = (await provider.request({
+      method: "eth_sendTransaction",
+      params: [
+        {
+          from: address,
+          to: RECIPIENT,
+          value: ACHIEVEMENT_FEE_WEI_HEX,
+          data: encodeTap({
+            score: ach.score,
+            combo: 0,
+            ts: Date.now(),
+          }),
+        },
+      ],
+    })) as string;
+    return { ok: true, hash };
+  } catch (err: unknown) {
+    const code = (err as { code?: number })?.code;
+    if (code === 4001) return { ok: false, reason: "rejected" };
+    return { ok: false, reason: "error" };
+  }
+}
